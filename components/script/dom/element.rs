@@ -1631,10 +1631,10 @@ impl<'a> VirtualMethods for JSRef<'a, Element> {
     }
 }
 
-impl<'a> style::node::TElement<'a> for JSRef<'a, Element> {
-    fn is_link(self) -> bool {
+impl<'a> style::node::TElement for JSRef<'a, Element> {
+    fn is_link(&self) -> bool {
         // FIXME: This is HTML only.
-        let node: JSRef<Node> = NodeCast::from_ref(self);
+        let node: JSRef<Node> = NodeCast::from_ref(*self);
         match node.type_id() {
             // https://html.spec.whatwg.org/multipage/#selector-link
             NodeTypeId::Element(ElementTypeId::HTMLElement(HTMLElementTypeId::HTMLAnchorElement)) |
@@ -1647,45 +1647,45 @@ impl<'a> style::node::TElement<'a> for JSRef<'a, Element> {
     }
 
     #[inline]
-    fn is_unvisited_link(self) -> bool {
+    fn is_unvisited_link(&self) -> bool {
         self.is_link()
     }
 
     #[inline]
-    fn is_visited_link(self) -> bool {
+    fn is_visited_link(&self) -> bool {
         false
     }
 
-    fn get_local_name(self) -> &'a Atom {
+    fn get_local_name<'b>(&'b self) -> &'b Atom {
         // FIXME(zwarich): Remove this when UFCS lands and there is a better way
         // of disambiguating methods.
         fn get_local_name<'a, T: ElementHelpers<'a>>(this: T) -> &'a Atom {
             this.local_name()
         }
 
-        get_local_name(self)
+        get_local_name(*self)
     }
-    fn get_namespace(self) -> &'a Namespace {
+    fn get_namespace<'b>(&'b self) -> &'b Namespace {
         // FIXME(zwarich): Remove this when UFCS lands and there is a better way
         // of disambiguating methods.
         fn get_namespace<'a, T: ElementHelpers<'a>>(this: T) -> &'a Namespace {
             this.namespace()
         }
 
-        get_namespace(self)
+        get_namespace(*self)
     }
-    fn get_hover_state(self) -> bool {
-        let node: JSRef<Node> = NodeCast::from_ref(self);
+    fn get_hover_state(&self) -> bool {
+        let node: JSRef<Node> = NodeCast::from_ref(*self);
         node.get_hover_state()
     }
-    fn get_focus_state(self) -> bool {
+    fn get_focus_state(&self) -> bool {
         // TODO: Also check whether the top-level browsing context has the system focus,
         // and whether this element is a browsing context container.
         // https://html.spec.whatwg.org/multipage/#selector-focus
-        let node: JSRef<Node> = NodeCast::from_ref(self);
+        let node: JSRef<Node> = NodeCast::from_ref(*self);
         node.get_focus_state()
     }
-    fn get_id(self) -> Option<Atom> {
+    fn get_id(&self) -> Option<Atom> {
         self.get_attribute(&ns!(""), &atom!("id")).map(|attr| {
             let attr = attr.root();
             // FIXME(https://github.com/rust-lang/rust/issues/23338)
@@ -1697,38 +1697,38 @@ impl<'a> style::node::TElement<'a> for JSRef<'a, Element> {
             }
         })
     }
-    fn get_disabled_state(self) -> bool {
-        let node: JSRef<Node> = NodeCast::from_ref(self);
+    fn get_disabled_state(&self) -> bool {
+        let node: JSRef<Node> = NodeCast::from_ref(*self);
         node.get_disabled_state()
     }
-    fn get_enabled_state(self) -> bool {
-        let node: JSRef<Node> = NodeCast::from_ref(self);
+    fn get_enabled_state(&self) -> bool {
+        let node: JSRef<Node> = NodeCast::from_ref(*self);
         node.get_enabled_state()
     }
-    fn get_checked_state(self) -> bool {
-        let input_element: Option<JSRef<HTMLInputElement>> = HTMLInputElementCast::to_ref(self);
+    fn get_checked_state(&self) -> bool {
+        let input_element: Option<JSRef<HTMLInputElement>> = HTMLInputElementCast::to_ref(*self);
         match input_element {
             Some(input) => input.Checked(),
             None => false,
         }
     }
-    fn get_indeterminate_state(self) -> bool {
-        let input_element: Option<JSRef<HTMLInputElement>> = HTMLInputElementCast::to_ref(self);
+    fn get_indeterminate_state(&self) -> bool {
+        let input_element: Option<JSRef<HTMLInputElement>> = HTMLInputElementCast::to_ref(*self);
         match input_element {
             Some(input) => input.get_indeterminate_state(),
             None => false,
         }
     }
-    fn has_class(self, name: &Atom) -> bool {
+    fn has_class(&self, name: &Atom) -> bool {
         // FIXME(zwarich): Remove this when UFCS lands and there is a better way
         // of disambiguating methods.
         fn has_class<T: AttributeHandlers>(this: T, name: &Atom) -> bool {
             this.has_class(name)
         }
 
-        has_class(self, name)
+        has_class(*self, name)
     }
-    fn each_class<F>(self, mut callback: F)
+    fn each_class<F>(&self, mut callback: F)
         where F: FnMut(&Atom)
     {
         if let Some(ref attr) = self.get_attribute(&ns!(""), &atom!("class")).root() {
@@ -1739,8 +1739,8 @@ impl<'a> style::node::TElement<'a> for JSRef<'a, Element> {
             }
         }
     }
-    fn has_nonzero_border(self) -> bool {
-        let table_element: Option<JSRef<HTMLTableElement>> = HTMLTableElementCast::to_ref(self);
+    fn has_nonzero_border(&self) -> bool {
+        let table_element: Option<JSRef<HTMLTableElement>> = HTMLTableElementCast::to_ref(*self);
         match table_element {
             None => false,
             Some(this) => {

@@ -8,7 +8,7 @@ use selectors::bloom::BloomFilter;
 use selectors::matching::{SelectorMap, Rule};
 use selectors::matching::DeclarationBlock as GenericDeclarationBlock;
 use selectors::parser::PseudoElement;
-use selectors::tree::TNode;
+use selectors::tree::{TNode, TElement};
 use std::process;
 use smallvec::VecLike;
 use util::resource_files::read_resource_file;
@@ -190,7 +190,7 @@ impl Stylist {
     /// The returned boolean indicates whether the style is *shareable*; that is, whether the
     /// matched selectors are simple enough to allow the matching logic to be reduced to the logic
     /// in `css::matching::PrivateMatchMethods::candidate_element_allows_for_style_sharing`.
-    pub fn push_applicable_declarations<'a,N,V>(
+    pub fn push_applicable_declarations<N,E,V>(
                                         &self,
                                         element: &N,
                                         parent_bf: &Option<Box<BloomFilter>>,
@@ -198,8 +198,8 @@ impl Stylist {
                                         pseudo_element: Option<PseudoElement>,
                                         applicable_declarations: &mut V)
                                         -> bool
-                                        where N: TNode<'a>,
-                                              N::Element: TElementAttributes<'a>,
+                                        where N: for<'a> TNode<'a, Element=E>,
+                                              E: TElementAttributes + TElement,
                                               V: VecLike<DeclarationBlock> {
         assert!(!self.is_dirty);
         assert!(element.is_element());

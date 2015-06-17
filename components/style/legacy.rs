@@ -7,7 +7,7 @@
 
 use std::sync::Arc;
 
-use selectors::tree::TNode;
+use selectors::tree::{TNode, TElement};
 use selectors::matching::DeclarationBlock;
 use node::TElementAttributes;
 use properties::PropertyDeclaration;
@@ -32,18 +32,18 @@ pub trait PresentationalHintSynthesis {
     /// `common_style_affecting_attributes` or `rare_style_affecting_attributes` as appropriate. If
     /// you don't, you risk strange random nondeterministic failures due to false positives in
     /// style sharing.
-    fn synthesize_presentational_hints_for_legacy_attributes<'a,N,V>(
+    fn synthesize_presentational_hints_for_legacy_attributes<N,E,V>(
         &self, node: &N, matching_rules_list: &mut V, shareable: &mut bool)
-            where N: TNode<'a>,
-                  N::Element: TElementAttributes<'a>,
+            where N: for<'a> TNode<'a, Element=E>,
+                  E: TElementAttributes + TElement,
                   V: VecLike<DeclarationBlock<Vec<PropertyDeclaration>>>;
 }
 
 impl PresentationalHintSynthesis for Stylist {
-    fn synthesize_presentational_hints_for_legacy_attributes<'a,N,V>(
+    fn synthesize_presentational_hints_for_legacy_attributes<N,E,V>(
         &self, node: &N, matching_rules_list: &mut V, shareable: &mut bool)
-             where N: TNode<'a>,
-                 N::Element: TElementAttributes<'a>,
+             where N: for<'a> TNode<'a, Element=E>,
+                  E: TElementAttributes + TElement,
                  V: VecLike<DeclarationBlock<Vec<PropertyDeclaration>>> {
         let element = node.as_element();
 
